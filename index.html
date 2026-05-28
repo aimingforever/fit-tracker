@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#16a34a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>13周减脂计划</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- 顶部安全区 -->
+  <div id="status-bar-spacer"></div>
+
+  <!-- Tab 内容区 -->
+  <main id="main-content">
+    <section id="tab-dashboard" class="tab-panel">
+      <!-- Dashboard module renders here -->
+    </section>
+
+    <section id="tab-diet" class="tab-panel" hidden>
+      <!-- Diet module renders here -->
+    </section>
+
+    <section id="tab-exercise" class="tab-panel" hidden>
+      <!-- Exercise module renders here -->
+    </section>
+
+    <section id="tab-data" class="tab-panel" hidden>
+      <!-- Data Page module renders here -->
+    </section>
+
+    <section id="tab-settings" class="tab-panel" hidden>
+      <!-- Settings module renders here -->
+    </section>
+  </main>
+
+  <!-- 底部导航 -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-btn active" data-tab="dashboard">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </button>
+    <button class="nav-btn" data-tab="diet">
+      <span class="nav-icon">🥗</span>
+      <span class="nav-label">饮食</span>
+    </button>
+    <button class="nav-btn" data-tab="exercise">
+      <span class="nav-icon">🏋️</span>
+      <span class="nav-label">训练</span>
+    </button>
+    <button class="nav-btn" data-tab="data">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">数据</span>
+    </button>
+    <button class="nav-btn" data-tab="settings">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">设置</span>
+    </button>
+  </nav>
+
+  <!-- Toast 容器 -->
+  <div id="toast-container"></div>
+
+  <!-- Modal 遮罩 -->
+  <div id="modal-overlay" hidden>
+    <div id="modal-content"></div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
