@@ -10,6 +10,7 @@ const KEY_CUSTOM_FOODS = 'fit_custom_foods';
 // ============================================================
 export const DEFAULT_SETTINGS = {
   isFirstRun:           true,
+  disclaimerAccepted:   false,
   userName:             null,
   startDate:            null,
   startWeightLbs:       195,

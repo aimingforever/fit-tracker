@@ -40,7 +40,7 @@ export const BADGES = [
   { id: 'streak_21',         name: '三周猛狮',      emoji: '🦁', category: 'training', condition: 'streak',             threshold: 21 },
   { id: 'streak_30',         name: '月度传奇',      emoji: '🏆', category: 'training', condition: 'streak',             threshold: 30 },
   { id: 'streak_60',         name: '双月无敌',      emoji: '🌟', category: 'training', condition: 'streak',             threshold: 60 },
-  { id: 'streak_91',         name: '13周完赛',      emoji: '👑', category: 'training', condition: 'streak',             threshold: 91 },
+  { id: 'streak_91',         name: '3个月完赛',      emoji: '👑', category: 'training', condition: 'streak',             threshold: 91 },
   { id: 'first_swim',        name: '入水第一次',    emoji: '🏊', category: 'training', condition: 'total_swim_days',    threshold: 1 },
   { id: 'swim_10',           name: '泳池常客',      emoji: '💦', category: 'training', condition: 'total_swim_days',    threshold: 10 },
   { id: 'phase1_done',       name: '第一阶段✔',    emoji: '🎯', category: 'training', condition: 'phase_complete',     threshold: 1 },

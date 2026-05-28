@@ -113,11 +113,48 @@ async function navigate(tab) {
 }
 
 // ============================================================
+// Legal Disclaimer
+// ============================================================
+function showDisclaimer(onAccept) {
+  // Build disclaimer HTML — reuses the wizard modal slot but with custom title
+  const html = `
+    <div class="modal-title">⚖️ 使用须知 & 隐私声明</div>
+    <div style="max-height:55vh;overflow-y:auto;font-size:13px;line-height:1.7;color:#374151">
+      <p><b>🏥 仅供个人记录和参考</b></p>
+      <p>本应用仅为个人健康数据记录与参考工具，不构成任何医疗建议、诊断或治疗方案。如有任何健康问题，请和具有执业资格的医师或医疗专业人员咨询。</p>
+      <p><b>🔒 数据存储与隐私</b></p>
+      <ul style="padding-left:16px;margin:4px 0">
+        <li>本应用不收集、不传输、不存储任何个人信息至任何服务器</li>
+        <li>所有数据（体重、饮食、训练记录等）仅存储在您自己设备的浏览器本地（localStorage）</li>
+        <li>您对自己的数据负全部责任，建议定期导出备份</li>
+        <li>唯一外部请求为加载图表库（Chart.js / jsDelivr CDN），不包含任何用户数据</li>
+      </ul>
+      <p><b>🇺🇸 / 🇨🇳 适用法律</b></p>
+      <p>本应用遵守美合众国相关法律及中华人民共和国《个人信息保护法（PIPL）》等相关法律法规。由于本应用不收集任何个人信息，不适用需要数据处理塀准的法律要求。</p>
+      <p style="color:#9ca3af;font-size:11px">继续使用即表示您已阅读并同意上述内容。</p>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="window._acceptDisclaimer()">✓ 我已阅读并同意，继续使用</button>
+  `;
+  showModal(html);
+  // Prevent closing by tapping the backdrop
+  const overlay = document.getElementById('modal-overlay');
+  if (overlay) overlay.onclick = null;
+
+  window._acceptDisclaimer = () => {
+    const s = getSettings();
+    s.disclaimerAccepted = true;
+    saveSettings(s);
+    hideModal();
+    onAccept();
+  };
+}
+
+// ============================================================
 // First-Run Wizard
 // ============================================================
 function showWizard() {
   const html = `
-    <div class="modal-title">👋 欢迎使用 13 周减脂计划</div>
+    <div class="modal-title">👋 欢迎使用 3 个月减脂计划</div>
     <p class="text-muted text-sm mb-2">先设置一下基本信息，只需 1 分钟。</p>
     <form id="wizard-form">
       <div class="form-group">
@@ -172,7 +209,7 @@ function showWizard() {
     settings.dailyProteinTarget= Math.round(startW * 0.73);
     saveSettings(settings);
     hideModal();
-    showToast('设置已保存！开始你的 13 周旅程 💪', 'success');
+    showToast('设置已保存！开始你的 3 个月旅程 💪', 'success');
     navigate('dashboard');
   });
 }
@@ -212,8 +249,11 @@ async function boot() {
 
   initGlobalListeners();
 
-  // First-run wizard
-  if (settings.isFirstRun) {
+  // Disclaimer + first-run wizard
+  if (!settings.disclaimerAccepted) {
+    await navigate('dashboard');
+    showDisclaimer(() => { if (settings.isFirstRun) showWizard(); });
+  } else if (settings.isFirstRun) {
     await navigate('dashboard');
     showWizard();
   } else {

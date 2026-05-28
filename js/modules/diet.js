@@ -2,6 +2,7 @@
 
 import { getDailyLog, saveDailyLog, getSettings, getCustomFoods, saveCustomFoods, getTodayDate } from '../storage.js';
 import { ALL_PRESETS, PRESET_CATEGORIES } from '../data/presets.js';
+import { INGREDIENTS, INGREDIENT_CATEGORIES } from '../data/ingredients.js';
 import { handleDayComplete } from '../engines/gamification.js';
 import { showModal, hideModal, showToast, on } from '../app.js';
 
@@ -129,6 +130,8 @@ function render() {
         `).join('')}
         <button class="quick-tab-btn ${_activeCategory === 'custom' ? 'active' : ''}"
                 onclick="window._switchCategory('custom')">📝 自定义</button>
+        <button class="quick-tab-btn ${_activeCategory === 'ingredient' ? 'active' : ''}"
+                onclick="window._switchCategory('ingredient')">⚖️ 食材称重</button>
       </div>
       <div id="preset-list">
         ${renderPresetList(_activeCategory)}
@@ -188,6 +191,10 @@ function render() {
 }
 
 function renderPresetList(catId) {
+  if (catId === 'ingredient') {
+    return renderIngredientPanel();
+  }
+
   if (catId === 'custom') {
     const customs = getCustomFoods();
     if (customs.length === 0) {
@@ -226,6 +233,119 @@ function renderPresetList(catId) {
     </div>
   `).join('');
 }
+
+function renderIngredientPanel(filterCat = '', query = '') {
+  const filtered = INGREDIENTS.filter(ing => {
+    const matchCat = !filterCat || ing.category === filterCat;
+    const matchQ   = !query    || ing.name.includes(query);
+    return matchCat && matchQ;
+  });
+
+  return `
+    <div style="margin-bottom:10px">
+      <input type="text" id="ing-search" placeholder="搜索食材…" value="${query}"
+             style="width:100%;padding:8px 12px;border:1px solid var(--color-border);border-radius:8px;font-size:14px"
+             oninput="window._ingFilter(this.value, '${filterCat}')">
+    </div>
+    <div class="quick-tabs" style="margin-bottom:8px">
+      <button class="quick-tab-btn ${!filterCat ? 'active' : ''}" onclick="window._ingFilter('', '')">全部</button>
+      ${INGREDIENT_CATEGORIES.map(c => `
+        <button class="quick-tab-btn ${filterCat === c.id ? 'active' : ''}"
+                onclick="window._ingFilter('${query}', '${c.id}')">${c.emoji} ${c.name}</button>
+      `).join('')}
+    </div>
+    ${filtered.length === 0
+      ? '<div class="text-muted text-sm" style="padding:12px 0">未找到匹配食材</div>'
+      : filtered.map(ing => `
+          <div class="preset-row">
+            <span style="font-size:20px">${ing.emoji}</span>
+            <div class="preset-info">
+              <div class="preset-name">${ing.name}</div>
+              <div class="preset-kcal" style="font-size:11px">${ing.per100g.kcal} kcal · P ${ing.per100g.protein}g · C ${ing.per100g.carbs}g · F ${ing.per100g.fat}g <span class="text-muted">/ 100g</span></div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="window._openIngModal('${ing.id}')">添加</button>
+          </div>
+        `).join('')
+    }
+  `;
+}
+
+window._ingFilter = (query, cat) => {
+  const panel = document.getElementById('preset-list');
+  if (panel) panel.innerHTML = renderIngredientPanel(cat, query);
+};
+
+window._openIngModal = (ingId) => {
+  const ing = INGREDIENTS.find(i => i.id === ingId);
+  if (!ing) return;
+
+  const html = `
+    <div class="modal-title">${ing.emoji} ${ing.name}</div>
+    <div class="form-group">
+      <label>重量 (g)</label>
+      <input type="number" id="ing-grams" value="100" min="1" max="5000" step="1"
+             style="font-size:20px;font-weight:700;text-align:center"
+             oninput="window._liveCalcIng('${ingId}')">
+    </div>
+    <div id="ing-macro-preview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center">
+      <div><div style="font-size:18px;font-weight:700" id="ing-pr-kcal">165</div><div style="font-size:11px;color:var(--color-muted)">kcal</div></div>
+      <div><div style="font-size:18px;font-weight:700;color:var(--color-primary)" id="ing-pr-p">31g</div><div style="font-size:11px;color:var(--color-muted)">蛋白质</div></div>
+      <div><div style="font-size:18px;font-weight:700" id="ing-pr-c">0g</div><div style="font-size:11px;color:var(--color-muted)">碳水</div></div>
+      <div><div style="font-size:18px;font-weight:700" id="ing-pr-f">4g</div><div style="font-size:11px;color:var(--color-muted)">脂肪</div></div>
+    </div>
+    <div class="form-group">
+      <label>添加到哪一餐？</label>
+      <select id="ing-slot-select">
+        <option value="breakfast">🌅 早餐</option>
+        <option value="lunch">☀️ 午餐</option>
+        <option value="dinner">🌙 晚餐</option>
+        <option value="snack">🍎 零食/加餐</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="window._addIngToMeal('${ingId}')">添加</button>
+  `;
+  showModal(html);
+  window._liveCalcIng(ingId);
+};
+
+window._liveCalcIng = (ingId) => {
+  const ing   = INGREDIENTS.find(i => i.id === ingId);
+  if (!ing) return;
+  const g     = parseFloat(document.getElementById('ing-grams')?.value) || 0;
+  const ratio = g / 100;
+  const round1 = v => Math.round(v * ratio * 10) / 10;
+  document.getElementById('ing-pr-kcal').textContent = Math.round(ing.per100g.kcal    * ratio);
+  document.getElementById('ing-pr-p').textContent    = round1(ing.per100g.protein)  + 'g';
+  document.getElementById('ing-pr-c').textContent    = round1(ing.per100g.carbs)    + 'g';
+  document.getElementById('ing-pr-f').textContent    = round1(ing.per100g.fat)      + 'g';
+};
+
+window._addIngToMeal = (ingId) => {
+  const ing  = INGREDIENTS.find(i => i.id === ingId);
+  if (!ing) return;
+  const g    = parseFloat(document.getElementById('ing-grams')?.value) || 0;
+  if (g <= 0) { showToast('请输入有效重量', 'danger'); return; }
+  const slot = document.getElementById('ing-slot-select')?.value || 'snack';
+  const ratio = g / 100;
+
+  const log = getDailyLog(_date);
+  log.meals.push({
+    id:      `${ingId}_${Date.now()}`,
+    name:    `${ing.name} ${g}g`,
+    kcal:    Math.round(ing.per100g.kcal    * ratio),
+    protein: Math.round(ing.per100g.protein * ratio * 10) / 10,
+    carbs:   Math.round(ing.per100g.carbs   * ratio * 10) / 10,
+    fat:     Math.round(ing.per100g.fat     * ratio * 10) / 10,
+    emoji:   ing.emoji,
+    slot,
+    addedAt: new Date().toISOString(),
+  });
+  saveDailyLog(_date, log);
+  hideModal();
+  triggerDayComplete();
+  render();
+  showToast(`${ing.emoji} ${ing.name} ${g}g 已添加`, 'success', 1800);
+};
 
 function openAddFoodModal(slot) {
   const html = `

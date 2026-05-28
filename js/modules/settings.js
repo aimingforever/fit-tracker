@@ -76,7 +76,7 @@ function render() {
       <div class="settings-section-title">进度概览</div>
       <div class="setting-row">
         <span class="setting-label">当前进度</span>
-        <span class="setting-value">第 ${week} 周 / 13 周</span>
+        <span class="setting-value">第 ${week} 周 / 13 周（3 个月）</span>
       </div>
       <div class="setting-row">
         <span class="setting-label">当前阶段</span>
@@ -122,12 +122,21 @@ function render() {
     <div class="card">
       <div class="settings-section-title">关于</div>
       <div class="setting-row">
-        <span class="setting-label">版本</span>
-        <span class="setting-value">v1.0.0</span>
+        <span class="setting-label">免责声明</span>
+        <button class="btn btn-ghost btn-sm" onclick="window._showDisclaimer()"
+                style="font-size:12px;padding:4px 8px">查看</button>
       </div>
       <div class="setting-row">
         <span class="setting-label">数据存储</span>
-        <span class="setting-value">本地 localStorage</span>
+        <span class="setting-value">本地 localStorage 只</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">版本</span>
+        <span class="setting-value">v1.1.0</span>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">数据存储</span>
+        <span class="setting-value">本地 localStorage 只</span>
       </div>
       <div class="setting-row">
         <span class="setting-label">无服务器</span>
@@ -231,5 +240,25 @@ function render() {
     hideModal();
     showToast('所有数据已清除', 'info');
     setTimeout(() => location.reload(), 1500);
+  };
+
+  window._showDisclaimer = () => {
+    showModal(`
+      <div class="modal-title">⚖️ 使用须知 & 隐私声明</div>
+      <div style="max-height:60vh;overflow-y:auto;font-size:13px;line-height:1.7;color:#374151">
+        <p><b>🏥 仅供个人记录和参考</b></p>
+        <p>本应用仅为个人健康数据记录与参考工具，不构成任何医疗建议、诊断或治疗方案。如有任何健康问题，请和具有执业资格的医师或医疗专业人员咨询。</p>
+        <p><b>🔒 数据存储与隐私</b></p>
+        <ul style="padding-left:16px;margin:4px 0">
+          <li>本应用不收集、不传输、不存储任何个人信息至任何服务器</li>
+          <li>所有数据（体重、饮食、训练记录等）仅存储在您自己设备的浏览器本地（localStorage）</li>
+          <li>您对自己的数据负全部责任，建议定期导出备份</li>
+          <li>唯一外部请求为加载图表库（Chart.js / jsDelivr CDN），不包含任何用户数据</li>
+        </ul>
+        <p><b>🇺🇸 / 🇨🇳 适用法律</b></p>
+        <p>本应用遵守美利坚合众国相关法律及中华人民共和国《个人信息保护法（PIPL）》等相关法律法规。由于本应用不收集任何个人信息，不适用需要数据处理审批的法律要求。</p>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="document.getElementById('modal-overlay').setAttribute('hidden','')">关闭</button>
+    `);
   };
 }
