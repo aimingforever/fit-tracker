@@ -130,24 +130,31 @@ function showWizard() {
       </div>
       <div class="form-group">
         <label>当前体重 (磅)</label>
-        <input type="number" id="wiz-weight" value="195" min="100" max="400" step="0.1">
+        <input type="number" id="wiz-weight" placeholder="例：195" min="100" max="400" step="0.1" oninput="window._wizCalcTargets()">
       </div>
       <div class="form-group">
         <label>目标体重 (磅)</label>
-        <input type="number" id="wiz-goal" value="165" min="100" max="400" step="0.1">
+        <input type="number" id="wiz-goal" placeholder="例：165" min="100" max="400" step="0.1">
       </div>
-      <div class="form-group">
-        <label>每日热量目标 (kcal)</label>
-        <input type="number" id="wiz-kcal" value="1800" min="1200" max="3000" step="50">
-      </div>
-      <div class="form-group">
-        <label>每日蛋白质目标 (g)</label>
-        <input type="number" id="wiz-protein" value="140" min="50" max="300" step="5">
+      <div id="wiz-calc-box" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 14px;font-size:13px;color:#15803d;margin-bottom:4px">
+        自动计算 → 每日热量目标：<b id="wiz-calc-kcal"></b> kcal &nbsp;·&nbsp; 蛋白质目标：<b id="wiz-calc-protein"></b> g
+        <div style="font-size:11px;color:#6b7280;margin-top:4px">可在设置中随时调整</div>
       </div>
       <button type="submit" class="btn btn-primary btn-full" style="margin-top:8px">开始计划 🚀</button>
     </form>
   `;
   showModal(html);
+
+  window._wizCalcTargets = () => {
+    const w = parseFloat(document.getElementById('wiz-weight')?.value);
+    const box = document.getElementById('wiz-calc-box');
+    if (!w || w < 100) { if (box) box.style.display = 'none'; return; }
+    const kcal    = Math.max(1500, Math.round(w * 9.2 / 100) * 100);
+    const protein = Math.round(w * 0.73);
+    document.getElementById('wiz-calc-kcal').textContent    = kcal;
+    document.getElementById('wiz-calc-protein').textContent = protein;
+    if (box) box.style.display = '';
+  };
 
   document.getElementById('wizard-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -155,10 +162,14 @@ function showWizard() {
     settings.isFirstRun        = false;
     settings.userName          = document.getElementById('wiz-name').value.trim() || null;
     settings.startDate         = document.getElementById('wiz-start').value;
-    settings.startWeightLbs    = parseFloat(document.getElementById('wiz-weight').value) || 195;
-    settings.goalWeightLbs     = parseFloat(document.getElementById('wiz-goal').value) || 165;
-    settings.dailyKcalTarget   = parseInt(document.getElementById('wiz-kcal').value)   || 1800;
-    settings.dailyProteinTarget= parseInt(document.getElementById('wiz-protein').value)|| 140;
+    const startW = parseFloat(document.getElementById('wiz-weight').value);
+    const goalW  = parseFloat(document.getElementById('wiz-goal').value);
+    if (!startW || startW < 100) { showToast('请输入当前体重', 'danger'); return; }
+    if (!goalW  || goalW  < 80)  { showToast('请输入目标体重', 'danger'); return; }
+    settings.startWeightLbs    = startW;
+    settings.goalWeightLbs     = goalW;
+    settings.dailyKcalTarget   = Math.max(1500, Math.round(startW * 9.2 / 100) * 100);
+    settings.dailyProteinTarget= Math.round(startW * 0.73);
     saveSettings(settings);
     hideModal();
     showToast('设置已保存！开始你的 13 周旅程 💪', 'success');

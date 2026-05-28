@@ -46,6 +46,22 @@ function render() {
   _el.innerHTML = `
     <div class="section-title">🥗 今日饮食</div>
 
+    <!-- 进食顺序提示 -->
+    <div class="card" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-left:4px solid var(--color-primary)">
+      <div class="card-title" style="margin-bottom:8px">🍽️ 进食顺序（降低血糖峰值 20–30%）</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="background:var(--color-primary);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">①</span>
+          <span style="font-size:14px">蛋白质 + 蔬菜</span>
+        </div>
+        <span style="color:var(--color-muted);font-size:18px">→</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="background:#f59e0b;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">②</span>
+          <span style="font-size:14px">主食最后吃（米饭 / 面包）</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 汇总 -->
     <div class="card">
       <div class="card-title">今日汇总</div>
